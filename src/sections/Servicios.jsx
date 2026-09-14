@@ -1,3 +1,7 @@
+/* =========================================================
+   ICONOS
+========================================================= */
+
 function IconoCodigo() {
   return (
     <svg
@@ -5,7 +9,7 @@ function IconoCodigo() {
       fill="none"
       stroke="currentColor"
       strokeWidth="1.8"
-      className="h-10 w-10"
+      className="h-9 w-9"
     >
       <rect x="3" y="4" width="18" height="13" rx="2" />
       <path d="M8 9l-2 2 2 2" />
@@ -22,12 +26,10 @@ function IconoChip() {
       fill="none"
       stroke="currentColor"
       strokeWidth="1.8"
-      className="h-10 w-10"
+      className="h-9 w-9"
     >
       <rect x="6" y="6" width="12" height="12" rx="2" />
-
       <path d="M9 2v4M15 2v4M9 18v4M15 18v4" />
-
       <path d="M2 9h4M2 15h4M18 9h4M18 15h4" />
     </svg>
   );
@@ -40,7 +42,7 @@ function IconoMovil() {
       fill="none"
       stroke="currentColor"
       strokeWidth="1.8"
-      className="h-10 w-10"
+      className="h-9 w-9"
     >
       <rect x="7" y="2" width="10" height="20" rx="2" />
       <path d="M10 18h4" />
@@ -55,16 +57,18 @@ function IconoMaletin() {
       fill="none"
       stroke="currentColor"
       strokeWidth="1.8"
-      className="h-10 w-10"
+      className="h-9 w-9"
     >
       <rect x="3" y="7" width="18" height="13" rx="2" />
-
       <path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2" />
-
       <path d="M3 12h18" />
     </svg>
   );
 }
+
+/* =========================================================
+   SERVICIOS
+========================================================= */
 
 function Servicios() {
   const servicios = [
@@ -109,116 +113,181 @@ function Servicios() {
           "url('/images/SERVICIOS-FONDO.jpg')",
       }}
     >
-      {/* Oscurecimiento */}
-      <div className="absolute inset-0 bg-black/10" />
+      {/* =====================================================
+          CAPAS PARA MEJORAR LA LECTURA
+      ====================================================== */}
 
-      {/* CONTENIDO */}
+      {/* Oscurecimiento general */}
+      <div className="absolute inset-0 bg-black/25" />
+
+      {/* Oscurecimiento más fuerte del lado izquierdo */}
+      <div
+        className="
+          absolute
+          inset-0
+          bg-gradient-to-r
+          from-black/85
+          via-black/40
+          to-black/10
+        "
+      />
+
+      {/* =====================================================
+          CONTENIDO
+      ====================================================== */}
       <div
         className="
           relative
           z-10
           mx-auto
           flex
-          min-h-[720px]
+          min-h-[760px]
           w-full
           max-w-[1500px]
           flex-col
-          px-6
-          py-16
+
+          px-5
+          pb-12
+          pt-14
+
+          sm:px-8
+          md:min-h-[800px]
           md:px-10
+          md:pt-16
+
           lg:px-16
+          lg:pb-16
         "
       >
-        {/* ===========================
-            TITULO
-        ============================ */}
-        <div className="mb-12 w-full text-center">
-          <span
+        {/* =================================================
+            TÍTULO
+        ================================================== */}
+        <div className="w-full text-center">
+          <p
             className="
-              block
-              text-sm
+              text-xs
+              font-medium
+              uppercase
               tracking-[0.65em]
               text-yellow-400
+
+              sm:text-sm
             "
           >
             NUESTROS
-          </span>
+          </p>
 
           <h2
             className="
               mt-2
               text-3xl
               font-bold
-              tracking-[0.3em]
+              uppercase
+              tracking-[0.28em]
               text-yellow-400
+
               sm:text-4xl
-              lg:text-5xl
+              md:text-5xl
             "
           >
             SERVICIOS
           </h2>
         </div>
 
-        {/* ===========================
-            AREA CENTRAL
-        ============================ */}
+        {/* =================================================
+            SERVICIOS
+        ================================================== */}
         <div
           className="
-            grid
-            w-full
+            flex
             flex-1
-            grid-cols-1
             items-center
-            lg:grid-cols-2
+            justify-start
+
+            py-12
+            md:py-10
           "
         >
-          {/* IZQUIERDA */}
           <div
             className="
-              flex
               w-full
-              flex-col
-              justify-center
+              max-w-[680px]
+
+              rounded-3xl
+              border
+              border-white/5
+
+              bg-black/20
+
+              px-4
+              py-7
+
+              backdrop-blur-[1px]
+
+              sm:px-6
+              md:px-8
+              md:py-8
             "
           >
-            <div
-              className="
-                mx-auto
-                w-full
-                max-w-[650px]
-                space-y-6
-              "
-            >
+            <div className="space-y-7">
               {servicios.map((servicio) => (
                 <div
                   key={servicio.id}
                   className="
+                    group
                     flex
                     items-center
                     gap-5
+
                     text-white
                   "
                 >
+                  {/* ICONO */}
                   <div
                     className="
                       flex
-                      w-[50px]
+                      h-14
+                      w-14
                       shrink-0
+                      items-center
                       justify-center
+
+                      rounded-xl
+
+                      border
+                      border-white/15
+
+                      bg-black/20
+
                       text-white
+
+                      transition-all
+                      duration-300
+
+                      group-hover:border-yellow-400
+                      group-hover:text-yellow-400
                     "
                   >
                     {servicio.icono}
                   </div>
 
+                  {/* TEXTO */}
                   <p
                     className="
                       text-sm
-                      leading-7
+                      leading-6
+
                       sm:text-base
+                      sm:leading-7
                     "
                   >
-                    <span className="mr-2 text-yellow-400">
+                    <span
+                      className="
+                        mr-2
+                        font-bold
+                        text-yellow-400
+                      "
+                    >
                       •
                     </span>
 
@@ -228,17 +297,13 @@ function Servicios() {
               ))}
             </div>
           </div>
-
-          {/* DERECHA */}
-          <div className="hidden lg:block" />
         </div>
 
-        {/* ===========================
+        {/* =================================================
             BROCHURE
-        ============================ */}
+        ================================================== */}
         <div
           className="
-            mt-12
             flex
             w-full
             flex-col
@@ -252,30 +317,55 @@ function Servicios() {
             target="_blank"
             rel="noopener noreferrer"
             className="
+              group
+
               inline-flex
-              min-w-[270px]
+              min-w-[250px]
               items-center
               justify-center
               gap-3
+
               rounded-full
+
               border
-              border-white
-              px-10
+              border-white/80
+
+              bg-black/35
+
+              px-8
               py-4
+
               text-xs
               font-bold
+              uppercase
+              tracking-wide
               text-white
+
+              shadow-lg
+              backdrop-blur-sm
+
               transition-all
               duration-300
+
+              hover:-translate-y-1
               hover:border-yellow-400
               hover:bg-yellow-400
               hover:text-black
+
+              sm:min-w-[280px]
             "
           >
+            {/* ICONO DESCARGA */}
             <svg
               viewBox="0 0 24 24"
               fill="currentColor"
-              className="h-4 w-4"
+              className="
+                h-4
+                w-4
+                transition-transform
+                duration-300
+                group-hover:translate-y-1
+              "
             >
               <path d="M12 3a1 1 0 011 1v8.59l2.3-2.29a1 1 0 011.4 1.42l-4 4a1 1 0 01-1.4 0l-4-4a1 1 0 011.4-1.42l2.3 2.29V4a1 1 0 011-1z" />
               <path d="M5 19a1 1 0 011-1h12a1 1 0 011 1v1a1 1 0 01-1 1H6a1 1 0 01-1-1v-1z" />
@@ -287,7 +377,8 @@ function Servicios() {
           <p
             className="
               mt-4
-              w-full
+              max-w-[500px]
+
               text-center
               text-xs
               italic
@@ -295,8 +386,8 @@ function Servicios() {
               text-yellow-400
             "
           >
-            Para mayor información descarga nuestro Business Brouchure es
-            gratis.
+            Para mayor información descarga nuestro Business Brouchure,
+            es gratis.
           </p>
         </div>
       </div>
