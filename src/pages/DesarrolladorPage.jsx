@@ -1,16 +1,17 @@
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import Nosotros from "../sections/Nosotros";
 
-function NosotrosPage() {
+import DesarrolladorVerificado from "../sections/DesarrolladorVerificado";
+
+function DesarrolladorPage() {
   return (
     <main className="min-h-screen overflow-x-hidden bg-black">
-      
-      {/* NAVBAR SEPARADO */}
+
+      {/* NAVBAR */}
       <Navbar solid />
 
-      {/* NOSOTROS */}
-      <Nosotros />
+      {/* DESARROLLADOR VERIFICADO */}
+      <DesarrolladorVerificado />
 
       {/* FOOTER */}
       <Footer />
@@ -19,4 +20,4 @@ function NosotrosPage() {
   );
 }
 
-export default NosotrosPage;
+export default DesarrolladorPage;

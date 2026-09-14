@@ -5,11 +5,16 @@ import Servicios from "../sections/Servicios";
 function ServiciosPage() {
   return (
     <main className="min-h-screen overflow-x-hidden bg-black">
-      <Navbar />
 
+      {/* NAVBAR SEPARADO */}
+      <Navbar solid />
+
+      {/* SERVICIOS */}
       <Servicios />
 
+      {/* FOOTER */}
       <Footer />
+
     </main>
   );
 }

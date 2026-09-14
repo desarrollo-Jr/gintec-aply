@@ -17,6 +17,8 @@ import HubblePage from "./pages/HubblePage";
 import IndustrialPage from "./pages/IndustrialPage";
 import SpacesPage from "./pages/SpacesPage";
 
+import DesarrolladorPage from "./pages/DesarrolladorPage";
+
 import ScrollToTop from "./components/ScrollToTop";
 
 function App() {
@@ -59,33 +61,36 @@ function App() {
           element={<ContactoPage />}
         />
 
-
-        {/* =========================
-            SOLUCIONES
-        ========================== */}
-
-        {/* HABITAN-T */}
+        {/* SOLUCIONES */}
         <Route
           path="/habitan-t"
           element={<HabitanTPage />}
         />
 
-        {/* HUBBLE */}
         <Route
           path="/hubble"
           element={<HubblePage />}
         />
 
-        {/* INDUSTRIAL */}
         <Route
           path="/industrial"
           element={<IndustrialPage />}
         />
 
-        {/* SPACES */}
         <Route
           path="/spaces"
           element={<SpacesPage />}
+        />
+
+        {/* 
+          DESARROLLADOR VERIFICADO
+
+          No aparece en Navbar.
+          Solo mediante URL.
+        */}
+        <Route
+          path="/desarrollador-verificado"
+          element={<DesarrolladorPage />}
         />
 
       </Routes>

@@ -2,7 +2,6 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
 import Contacto from "../sections/Contacto";
-import DesarrolladorVerificado from "../sections/DesarrolladorVerificado";
 import Mapa from "../sections/Mapa";
 
 function ContactoPage() {
@@ -10,11 +9,8 @@ function ContactoPage() {
     <main className="min-h-screen overflow-x-hidden bg-black">
       <Navbar />
 
-      {/* CONTACTO + FORMULARIO */}
+      {/* CONTACTO */}
       <Contacto />
-
-      {/* DESARROLLADOR VERIFICADO */}
-      <DesarrolladorVerificado />
 
       {/* MAPA */}
       <Mapa />

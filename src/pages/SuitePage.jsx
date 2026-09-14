@@ -5,11 +5,16 @@ import Soluciones from "../sections/Soluciones";
 function SuitePage() {
   return (
     <main className="min-h-screen overflow-x-hidden bg-black">
-      <Navbar />
 
+      {/* NAVBAR SEPARADO */}
+      <Navbar solid />
+
+      {/* CARDS DE SUITE */}
       <Soluciones />
 
+      {/* FOOTER */}
       <Footer />
+
     </main>
   );
 }
