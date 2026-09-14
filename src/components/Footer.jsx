@@ -119,9 +119,7 @@ function Footer() {
 
           {/* WHATSAPP NORMAL DEL FOOTER */}
           <a
-            href="https://wa.me/527712576279"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="#"
             aria-label="WhatsApp"
             className="
               flex
