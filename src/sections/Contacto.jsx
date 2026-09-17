@@ -1,3 +1,13 @@
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
+/* =========================================================
+   ICONOS
+========================================================= */
+
 function TelefonoIcon() {
   return (
     <svg
@@ -34,19 +44,354 @@ function UbicacionIcon() {
   );
 }
 
-function Contacto() {
-  const enviarFormulario = (event) => {
-    event.preventDefault();
+/* =========================================================
+   TURNSTILE
+========================================================= */
 
-    const datos = new FormData(event.currentTarget);
+function TurnstileWidget({
+  onVerify,
+  resetKey,
+}) {
+  const contenedorRef =
+    useRef(null);
 
-    const informacion = {
-      nombre: datos.get("nombre"),
-      correo: datos.get("correo"),
-      mensaje: datos.get("mensaje"),
+  const widgetIdRef =
+    useRef(null);
+
+  const siteKey =
+    import.meta.env
+      .VITE_TURNSTILE_SITE_KEY;
+
+  useEffect(() => {
+    let cancelado = false;
+    let timer;
+
+    const renderizar = () => {
+      if (
+        cancelado ||
+        !contenedorRef.current
+      ) {
+        return;
+      }
+
+      if (!window.turnstile) {
+        timer = setTimeout(
+          renderizar,
+          150
+        );
+
+        return;
+      }
+
+      if (
+        widgetIdRef.current !== null
+      ) {
+        return;
+      }
+
+      widgetIdRef.current =
+        window.turnstile.render(
+          contenedorRef.current,
+          {
+            sitekey: siteKey,
+
+            theme: "dark",
+
+            size: "flexible",
+
+            appearance:
+              "interaction-only",
+
+            action: "contacto",
+
+            callback: (token) => {
+              onVerify(token);
+            },
+
+            "expired-callback": () => {
+              onVerify("");
+            },
+
+            "error-callback": () => {
+              onVerify("");
+            },
+          }
+        );
     };
 
-    console.log("Formulario:", informacion);
+    if (siteKey) {
+      renderizar();
+    }
+
+    return () => {
+      cancelado = true;
+
+      clearTimeout(timer);
+
+      if (
+        window.turnstile &&
+        widgetIdRef.current !== null
+      ) {
+        try {
+          window.turnstile.remove(
+            widgetIdRef.current
+          );
+        } catch {
+          // Nada
+        }
+
+        widgetIdRef.current = null;
+      }
+    };
+  }, [siteKey, onVerify]);
+
+  /* Reiniciar después de envío */
+  useEffect(() => {
+    if (
+      resetKey > 0 &&
+      window.turnstile &&
+      widgetIdRef.current !== null
+    ) {
+      window.turnstile.reset(
+        widgetIdRef.current
+      );
+    }
+  }, [resetKey]);
+
+  if (!siteKey) {
+    return (
+      <p className="text-sm text-red-300">
+        Falta configurar Turnstile.
+      </p>
+    );
+  }
+
+  return (
+    <div
+      ref={contenedorRef}
+      className="w-full max-w-[340px]"
+    />
+  );
+}
+
+/* =========================================================
+   CONTACTO
+========================================================= */
+
+function Contacto() {
+  const [nombre, setNombre] =
+    useState("");
+
+  const [correo, setCorreo] =
+    useState("");
+
+  const [mensaje, setMensaje] =
+    useState("");
+
+  /* Honeypot */
+  const [website, setWebsite] =
+    useState("");
+
+  const [
+    turnstileToken,
+    setTurnstileToken,
+  ] = useState("");
+
+  const [resetKey, setResetKey] =
+    useState(0);
+
+  const [estado, setEstado] =
+    useState("");
+
+  const [tipoEstado, setTipoEstado] =
+    useState("");
+
+  const [enviando, setEnviando] =
+    useState(false);
+
+  const correoValido = (email) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+      email
+    );
+  };
+
+  /* =======================================================
+     ENVIAR
+  ======================================================= */
+
+  const enviarFormulario = async (
+    event
+  ) => {
+    event.preventDefault();
+
+    setEstado("");
+    setTipoEstado("");
+
+    const nombreLimpio =
+      nombre.trim();
+
+    const correoLimpio =
+      correo.trim();
+
+    const mensajeLimpio =
+      mensaje.trim();
+
+    if (nombreLimpio.length < 2) {
+      setTipoEstado("error");
+      setEstado(
+        "Escribe un nombre válido."
+      );
+
+      return;
+    }
+
+    if (
+      !correoValido(
+        correoLimpio
+      )
+    ) {
+      setTipoEstado("error");
+      setEstado(
+        "Escribe un correo electrónico válido."
+      );
+
+      return;
+    }
+
+    if (
+      mensajeLimpio.length < 5
+    ) {
+      setTipoEstado("error");
+      setEstado(
+        "El mensaje es demasiado corto."
+      );
+
+      return;
+    }
+
+    if (mensaje.length > 300) {
+      setTipoEstado("error");
+      setEstado(
+        "El mensaje no puede superar los 300 caracteres."
+      );
+
+      return;
+    }
+
+    if (!turnstileToken) {
+      setTipoEstado("error");
+      setEstado(
+        "Completa la verificación de seguridad."
+      );
+
+      return;
+    }
+
+    try {
+      setEnviando(true);
+
+      const respuesta =
+        await fetch(
+          "/api/contacto",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body: JSON.stringify({
+              nombre:
+                nombreLimpio,
+
+              correo:
+                correoLimpio,
+
+              mensaje:
+                mensajeLimpio,
+
+              website,
+
+              turnstileToken,
+            }),
+          }
+        );
+
+      const resultado =
+        await respuesta
+          .json()
+          .catch(() => ({}));
+
+      if (!respuesta.ok) {
+        setTipoEstado("error");
+
+        if (
+          respuesta.status ===
+          429
+        ) {
+          setEstado(
+            "Has enviado varios mensajes. Espera unos minutos antes de volver a intentarlo."
+          );
+        } else {
+          setEstado(
+            resultado.message ||
+              "No fue posible enviar el mensaje."
+          );
+        }
+
+        /*
+          El token de Turnstile puede
+          haberse consumido, por lo que
+          generamos otro.
+        */
+        setTurnstileToken("");
+
+        setResetKey(
+          (anterior) =>
+            anterior + 1
+        );
+
+        return;
+      }
+
+      /* ÉXITO */
+
+      setTipoEstado("exito");
+
+      setEstado(
+        "Mensaje enviado correctamente. Nos pondremos en contacto contigo."
+      );
+
+      setNombre("");
+      setCorreo("");
+      setMensaje("");
+      setWebsite("");
+
+      setTurnstileToken("");
+
+      setResetKey(
+        (anterior) =>
+          anterior + 1
+      );
+    } catch (error) {
+      console.error(error);
+
+      setTipoEstado("error");
+
+      setEstado(
+        "No se pudo conectar con el servidor. Inténtalo nuevamente."
+      );
+
+      setTurnstileToken("");
+
+      setResetKey(
+        (anterior) =>
+          anterior + 1
+      );
+    } finally {
+      setEnviando(false);
+    }
   };
 
   return (
@@ -63,10 +408,10 @@ function Contacto() {
         text-white
       "
       style={{
-        backgroundImage: "url('/images/FondoCONTACTO.png')",
+        backgroundImage:
+          "url('/images/FondoCONTACTO.png')",
       }}
     >
-      {/* Oscurecimiento */}
       <div className="absolute inset-0 bg-black/25" />
 
       <div
@@ -75,22 +420,20 @@ function Contacto() {
           z-10
           mx-auto
           flex
-          min-h-[820px]
+          min-h-[850px]
           w-full
           max-w-6xl
           flex-col
           px-5
           pb-16
-          pt-32
-
+          pt-24
           sm:px-8
-          md:pt-36
+          md:pt-28
           lg:px-10
         "
       >
-        {/* =========================
-            TÍTULO
-        ========================== */}
+        {/* TÍTULO */}
+
         <h2
           className="
             text-center
@@ -98,7 +441,6 @@ function Contacto() {
             font-bold
             tracking-[0.35em]
             text-yellow-400
-
             sm:text-4xl
             md:text-5xl
           "
@@ -106,9 +448,8 @@ function Contacto() {
           CONTÁCTANOS
         </h2>
 
-        {/* =========================
-            DATOS
-        ========================== */}
+        {/* DATOS */}
+
         <div
           className="
             mx-auto
@@ -118,13 +459,13 @@ function Contacto() {
             max-w-4xl
             grid-cols-1
             gap-8
-
             md:mt-12
             md:grid-cols-3
             md:gap-0
           "
         >
           {/* TELÉFONO */}
+
           <div
             className="
               flex
@@ -132,24 +473,14 @@ function Contacto() {
               items-center
               justify-center
               text-center
-
               md:border-r
               md:border-yellow-400/50
               md:px-5
             "
           >
-            <div className="text-white">
-              <TelefonoIcon />
-            </div>
+            <TelefonoIcon />
 
-            <span
-              className="
-                mt-3
-                text-sm
-                italic
-                text-yellow-400
-              "
-            >
+            <span className="mt-3 text-sm italic text-yellow-400">
               Teléfono
             </span>
 
@@ -168,6 +499,7 @@ function Contacto() {
           </div>
 
           {/* CORREO */}
+
           <div
             className="
               flex
@@ -175,24 +507,14 @@ function Contacto() {
               items-center
               justify-center
               text-center
-
               md:border-r
               md:border-yellow-400/50
               md:px-5
             "
           >
-            <div className="text-white">
-              <CorreoIcon />
-            </div>
+            <CorreoIcon />
 
-            <span
-              className="
-                mt-3
-                text-sm
-                italic
-                text-yellow-400
-              "
-            >
+            <span className="mt-3 text-sm italic text-yellow-400">
               Mail
             </span>
 
@@ -205,7 +527,6 @@ function Contacto() {
                 font-semibold
                 transition
                 hover:text-yellow-400
-
                 sm:text-lg
               "
             >
@@ -214,6 +535,7 @@ function Contacto() {
           </div>
 
           {/* UBICACIÓN */}
+
           <div
             className="
               flex
@@ -224,39 +546,27 @@ function Contacto() {
               md:px-5
             "
           >
-            <div className="text-white">
-              <UbicacionIcon />
-            </div>
+            <UbicacionIcon />
 
-            <span
-              className="
-                mt-3
-                text-sm
-                italic
-                text-yellow-400
-              "
-            >
+            <span className="mt-3 text-sm italic text-yellow-400">
               Ubicación
             </span>
 
-            <p
-              className="
-                mt-2
-                text-lg
-                font-semibold
-              "
-            >
+            <p className="mt-2 text-lg font-semibold">
               Pachuca, Hidalgo
             </p>
           </div>
         </div>
 
-        {/* =========================
-            FORMULARIO
-        ========================== */}
+        {/* FORMULARIO */}
+
         <form
-          onSubmit={enviarFormulario}
+          onSubmit={
+            enviarFormulario
+          }
+          noValidate
           className="
+            relative
             mx-auto
             mt-auto
             w-full
@@ -264,20 +574,57 @@ function Contacto() {
             pt-16
           "
         >
-          <div
-            className="
-              grid
-              grid-cols-1
-              gap-4
+          {/* =================================
+              HONEYPOT
 
-              md:grid-cols-2
+              No lo verá ningún usuario.
+          ================================== */}
+
+          <div
+            aria-hidden="true"
+            className="
+              absolute
+              left-[-9999px]
+              top-auto
+              h-[1px]
+              w-[1px]
+              overflow-hidden
             "
           >
+            <label htmlFor="website">
+              Sitio web
+            </label>
+
+            <input
+              id="website"
+              type="text"
+              name="website"
+              tabIndex={-1}
+              autoComplete="off"
+              value={website}
+              onChange={(e) =>
+                setWebsite(
+                  e.target.value
+                )
+              }
+            />
+          </div>
+
+          {/* NOMBRE / CORREO */}
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <input
               type="text"
               name="nombre"
               placeholder="Nombre..."
-              required
+              autoComplete="name"
+              maxLength={80}
+              value={nombre}
+              onChange={(e) =>
+                setNombre(
+                  e.target.value
+                )
+              }
               className="
                 h-[54px]
                 w-full
@@ -289,7 +636,6 @@ function Contacto() {
                 text-black
                 outline-none
                 transition
-
                 focus:border-yellow-400
               "
             />
@@ -298,7 +644,14 @@ function Contacto() {
               type="email"
               name="correo"
               placeholder="Correo..."
-              required
+              autoComplete="email"
+              maxLength={160}
+              value={correo}
+              onChange={(e) =>
+                setCorreo(
+                  e.target.value
+                )
+              }
               className="
                 h-[54px]
                 w-full
@@ -310,56 +663,126 @@ function Contacto() {
                 text-black
                 outline-none
                 transition
-
                 focus:border-yellow-400
               "
             />
           </div>
 
-          <textarea
-            name="mensaje"
-            rows="5"
-            placeholder="Mensaje..."
-            required
-            className="
-              mt-4
-              min-h-[135px]
-              w-full
-              resize-none
-              border
-              border-transparent
-              bg-white
-              px-4
-              py-4
-              text-sm
-              text-black
-              outline-none
-              transition
+          {/* MENSAJE */}
 
-              focus:border-yellow-400
-            "
-          />
+          <div className="relative mt-4">
+            <textarea
+              name="mensaje"
+              rows="6"
+              maxLength={300}
+              placeholder="Mensaje..."
+              value={mensaje}
+              onChange={(e) =>
+                setMensaje(
+                  e.target.value
+                )
+              }
+              className="
+                min-h-[150px]
+                w-full
+                resize-none
+                border
+                border-transparent
+                bg-white
+                px-4
+                pb-9
+                pt-4
+                text-sm
+                text-black
+                outline-none
+                transition
+                focus:border-yellow-400
+              "
+            />
+
+            {/* CONTADOR */}
+
+            <span
+              className={`
+                absolute
+                bottom-3
+                right-4
+                text-xs
+                ${
+                  mensaje.length >=
+                  280
+                    ? "text-red-500"
+                    : "text-gray-500"
+                }
+              `}
+            >
+              {mensaje.length} / 300
+            </span>
+          </div>
+
+          {/* TURNSTILE */}
+
+          <div className="mt-5">
+            <TurnstileWidget
+              onVerify={
+                setTurnstileToken
+              }
+              resetKey={resetKey}
+            />
+          </div>
+
+          {/* ESTADO */}
+
+          {estado && (
+            <div
+              className={`
+                mt-5
+                rounded-lg
+                px-4
+                py-3
+                text-sm
+                font-medium
+
+                ${
+                  tipoEstado ===
+                  "exito"
+                    ? "border border-green-400/30 bg-green-500/20 text-green-200"
+                    : "border border-red-400/30 bg-red-500/20 text-red-200"
+                }
+              `}
+            >
+              {estado}
+            </div>
+          )}
+
+          {/* BOTÓN */}
 
           <button
             type="submit"
+            disabled={enviando}
             className="
-              mt-4
-              min-w-[110px]
+              mt-5
+              min-w-[135px]
               rounded-full
               bg-yellow-400
               px-9
               py-3
               text-xs
               font-bold
+              uppercase
               text-black
               transition-all
               duration-300
-
               hover:scale-105
               hover:bg-white
+              disabled:cursor-not-allowed
+              disabled:opacity-50
+              disabled:hover:scale-100
             "
           >
-            ENVIAR
+            {enviando
+              ? "ENVIANDO..."
+              : "ENVIAR"}
           </button>
         </form>
       </div>
